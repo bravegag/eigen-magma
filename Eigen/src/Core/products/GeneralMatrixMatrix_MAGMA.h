@@ -64,72 +64,72 @@ static void run(Index rows, Index cols, Index depth, \
   level3_blocking<EIGTYPE, EIGTYPE>& /*blocking*/, \
   GemmParallelInfo<Index>* /*info = 0*/) \
 { \
-    const MAGMATYPE *h_A, *h_B; \
-    MAGMATYPE *h_C; \
-    MAGMATYPE *d_A, *d_B, *d_C; \
-    magma_int_t M, N, K; \
-    magma_int_t Am, An, Bm, Bn; \
-    magma_int_t sizeA, sizeB, sizeC; \
-    magma_int_t lda, ldb, ldc, ldda, lddb, lddc; \
-    MAGMATYPE alpha_, beta_; \
-    EIGTYPE one(1); \
+ 	const MAGMATYPE *h_A, *h_B; \
+ 	MAGMATYPE *h_C; \
+ 	MAGMATYPE *d_A, *d_B, *d_C; \
+ 	magma_int_t M, N, K; \
+ 	magma_int_t Am, An, Bm, Bn; \
+ 	magma_int_t sizeA, sizeB, sizeC; \
+ 	magma_int_t lda, ldb, ldc, ldda, lddb, lddc; \
+	MAGMATYPE alpha_, beta_; \
+	EIGTYPE one(1); \
 \
-    M = rows, N = cols, K = depth; \
+	M = rows, N = cols, K = depth; \
 \
-    h_A = _lhs; \
-    h_B = _rhs; \
-    h_C = res; 	\
+	h_A = _lhs; \
+	h_B = _rhs; \
+	h_C = res; 	\
 \
-    magma_trans_t transA = (LhsStorageOrder == RowMajor) ? ((ConjugateLhs) ? MagmaConjTrans : MagmaTrans) : MagmaNoTrans; \
-    magma_trans_t transB = (RhsStorageOrder == RowMajor) ? ((ConjugateRhs) ? MagmaConjTrans : MagmaTrans) : MagmaNoTrans; \
+	magma_trans_t transA = (LhsStorageOrder == RowMajor) ? ((ConjugateLhs) ? MagmaConjTrans : MagmaTrans) : MagmaNoTrans; \
+	magma_trans_t transB = (RhsStorageOrder == RowMajor) ? ((ConjugateRhs) ? MagmaConjTrans : MagmaTrans) : MagmaNoTrans; \
 \
-    if ( transA == MagmaNoTrans ) { \
-        lda = Am = M; \
-        An = K; \
-    } else { \
-        lda = Am = K; \
-        An = M; \
-    } \
+	if ( transA == MagmaNoTrans ) { \
+		lda = Am = M; \
+		An = K; \
+	} else { \
+		lda = Am = K; \
+		An = M; \
+	} \
 \
-    if ( transB == MagmaNoTrans ) { \
-        ldb = Bm = K; \
-        Bn = N; \
-    } else { \
-        ldb = Bm = N; \
-        Bn = K; \
-    } \
-    ldc = M; \
+	if ( transB == MagmaNoTrans ) { \
+		ldb = Bm = K; \
+		Bn = N; \
+	} else { \
+ 		ldb = Bm = N; \
+		Bn = K; \
+	} \
+	ldc = M; \
 \
-    ldda = ((lda+31)/32)*32; \
-    lddb = ((ldb+31)/32)*32; \
-    lddc = ((ldc+31)/32)*32; \
+	ldda = ((lda+31)/32)*32; \
+	lddb = ((ldb+31)/32)*32; \
+	lddc = ((ldc+31)/32)*32; \
 \
-    sizeA = lda*An; \
-    sizeB = ldb*Bn; \
-    sizeC = ldc*N; \
+	sizeA = lda*An; \
+	sizeB = ldb*Bn; \
+	sizeC = ldc*N; \
 \
-    MAGMA_DEVALLOC( d_A, MAGMATYPE, ldda*An ); \
-    MAGMA_DEVALLOC( d_B, MAGMATYPE, lddb*Bn ); \
-    MAGMA_DEVALLOC( d_C, MAGMATYPE, lddc*N  ); \
+	MAGMA_DEVALLOC( d_A, MAGMATYPE, ldda*An ); \
+	MAGMA_DEVALLOC( d_B, MAGMATYPE, lddb*Bn ); \
+	MAGMA_DEVALLOC( d_C, MAGMATYPE, lddc*N  ); \
 \
-    magma_dsetmatrix( Am, An, h_A, lda, d_A, ldda ); \
-    magma_dsetmatrix( Bm, Bn, h_B, ldb, d_B, lddb ); \
-    magma_dsetmatrix( M, N, h_C, ldc, d_C, lddc ); \
+	magma_dsetmatrix( Am, An, h_A, lda, d_A, ldda ); \
+	magma_dsetmatrix( Bm, Bn, h_B, ldb, d_B, lddb ); \
+	magma_dsetmatrix( M, N, h_C, ldc, d_C, lddc ); \
 \
-    /* Set alpha_ & beta_ */ \
-    assign_scalar_eig2magma(alpha_, alpha); \
-    assign_scalar_eig2magma(beta_ , one); \
+	/* Set alpha_ & beta_ */ \
+	assign_scalar_eig2magma(alpha_, alpha); \
+	assign_scalar_eig2magma(beta_ , one); \
 \
-    cublas##MAGMAPREFIX##gemm( transA, transB, M, N, K, \
-                 alpha_, d_A, ldda, 		\
-                         d_B, lddb, 		\
-                 beta_,  d_C, lddc ); 	\
+	cublas##MAGMAPREFIX##gemm( transA, transB, M, N, K, \
+		alpha_, d_A, ldda, 		\
+			d_B, lddb, 		\
+		beta_,  d_C, lddc ); 	\
 \
-    magma_##MAGMAPREFIXLOW##getmatrix( M, N, d_C, lddc, h_C, ldc ); \
+	magma_##MAGMAPREFIXLOW##getmatrix( M, N, d_C, lddc, h_C, ldc ); \
 \
-    MAGMA_DEVFREE( d_A ); \
-    MAGMA_DEVFREE( d_B ); \
-    MAGMA_DEVFREE( d_C ); \
+	MAGMA_DEVFREE( d_A ); \
+	MAGMA_DEVFREE( d_B ); \
+	MAGMA_DEVFREE( d_C ); \
 \
 }};
 
