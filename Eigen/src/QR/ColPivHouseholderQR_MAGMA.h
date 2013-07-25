@@ -125,13 +125,13 @@ ColPivHouseholderQR<Matrix<EIGTYPE, Dynamic, Dynamic, EIGCOLROW, Dynamic, Dynami
 	return *this; \
 }
 
-EIGEN_MAGMA_QR_COLPIV  (double,   double,			  d, ColMajor, LAPACK_COL_MAJOR)
-//EIGEN_MAGMA_QR_COLPIV(float,    float,         	  s, ColMajor, LAPACK_COL_MAJOR)
+EIGEN_MAGMA_QR_COLPIV  (double,   double,	      d, ColMajor, LAPACK_COL_MAJOR)
+EIGEN_MAGMA_QR_COLPIV  (float,    float,              s, ColMajor, LAPACK_COL_MAJOR)
 //EIGEN_MAGMA_QR_COLPIV(dcomplex, magmaDoubleComplex, z, ColMajor, LAPACK_COL_MAJOR)
 //EIGEN_MAGMA_QR_COLPIV(scomplex, magmaFloatComplex,  c, ColMajor, LAPACK_COL_MAJOR)
 
-EIGEN_MAGMA_QR_COLPIV  (double,   double,        	  d, RowMajor, LAPACK_ROW_MAJOR)
-//EIGEN_MAGMA_QR_COLPIV(float,    float,         	  s, RowMajor, LAPACK_ROW_MAJOR)
+EIGEN_MAGMA_QR_COLPIV  (double,   double,             d, RowMajor, LAPACK_ROW_MAJOR)
+EIGEN_MAGMA_QR_COLPIV  (float,    float,              s, RowMajor, LAPACK_ROW_MAJOR)
 //EIGEN_MAGMA_QR_COLPIV(dcomplex, magmaDoubleComplex, z, RowMajor, LAPACK_ROW_MAJOR)
 //EIGEN_MAGMA_QR_COLPIV(scomplex, magmaFloatComplex,  c, RowMajor, LAPACK_ROW_MAJOR)
 
