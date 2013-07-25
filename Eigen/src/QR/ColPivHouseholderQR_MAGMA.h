@@ -48,6 +48,7 @@ ColPivHouseholderQR<Matrix<EIGTYPE, Dynamic, Dynamic, EIGCOLROW, Dynamic, Dynami
               const Matrix<EIGTYPE, Dynamic, Dynamic, EIGCOLROW, Dynamic, Dynamic>& matrix) \
 \
 { \
+	using std::abs; \
 	magma_int_t checkres; \
 	MAGMATYPE *tau, *h_work; \
 	magma_int_t *jpvt; \
@@ -112,10 +113,10 @@ ColPivHouseholderQR<Matrix<EIGTYPE, Dynamic, Dynamic, EIGCOLROW, Dynamic, Dynami
 	m_isInitialized = true; \
 	m_maxpivot=m_qr.diagonal().cwiseAbs().maxCoeff(); \
 	m_hCoeffs.adjointInPlace(); \
-	RealScalar premultiplied_threshold = internal::abs(m_maxpivot) * threshold(); \
+	RealScalar premultiplied_threshold = abs(m_maxpivot) * threshold(); \
 	magma_int_t *perm = m_colsPermutation.indices().data(); \
 	for(i=0;i<size;i++) { \
-		m_nonzero_pivots += (internal::abs(m_qr.coeff(i,i)) > premultiplied_threshold); \
+		m_nonzero_pivots += (abs(m_qr.coeff(i,i)) > premultiplied_threshold); \
 	} \
 	for(i=0;i<cols;i++) perm[i]--; \
 \
