@@ -31,6 +31,10 @@
 // and inclusion of their respective header files
 #include "src/Core/util/MKL_support.h"
 
+// this include file manages BLAS and MAGMA related macros
+// and inclusion of their respective header files
+#include "src/Core/util/MAGMA_support.h"
+
 // if alignment is disabled, then disable vectorization. Note: EIGEN_ALIGN is the proper check, it takes into
 // account both the user's will (EIGEN_DONT_ALIGN) and our own platform checks
 #if !EIGEN_ALIGN
@@ -361,9 +365,26 @@ using std::ptrdiff_t;
 #include "src/Core/products/TriangularSolverMatrix_MKL.h"
 #endif // EIGEN_USE_BLAS
 
+// TODO: implement
+#ifdef EIGEN_USE_CUBLAS
+#include "src/Core/products/GeneralMatrixMatrix_MAGMA.h"
+//#include "src/Core/products/GeneralMatrixVector_MAGMA.h"
+//#include "src/Core/products/GeneralMatrixMatrixTriangular_MAGMA.h"
+//#include "src/Core/products/SelfadjointMatrixMatrix_MAGMA.h"
+//#include "src/Core/products/SelfadjointMatrixVector_MAGMA.h"
+//#include "src/Core/products/TriangularMatrixMatrix_MAGMA.h"
+//#include "src/Core/products/TriangularMatrixVector_MAGMA.h"
+//#include "src/Core/products/TriangularSolverMatrix_MAGMA.h"
+#endif // EIGEN_USE_CUBLAS
+
 #ifdef EIGEN_USE_MKL_VML
 #include "src/Core/Assign_MKL.h"
 #endif
+
+// TODO: implement
+//#ifdef EIGEN_USE_MAGMA_VML
+//#include "src/Core/Assign_MAGMA.h"
+//#endif
 
 #include "src/Core/GlobalFunctions.h"
 
