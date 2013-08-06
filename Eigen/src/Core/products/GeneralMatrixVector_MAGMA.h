@@ -25,7 +25,7 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  ********************************************************************************
- *   Content : Eigen bindings to Intel(R) MAGMA
+ *   Content : Eigen bindings to MAGMA
  *   General matrix-vector product functionality based on ?GEMV.
  ********************************************************************************
 */
