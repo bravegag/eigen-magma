@@ -159,8 +159,8 @@ static EIGEN_DONT_INLINE void run( \
 }\
 };
 
-EIGEN_MAGMA_GEMV_SPECIALIZATION(double,   double,        	  D, d)
-EIGEN_MAGMA_GEMV_SPECIALIZATION(float,    float,         	  S, s)
+EIGEN_MAGMA_GEMV_SPECIALIZATION(double,   double, 	      D, d)
+EIGEN_MAGMA_GEMV_SPECIALIZATION(float,    float,	      S, s)
 EIGEN_MAGMA_GEMV_SPECIALIZATION(dcomplex, magmaDoubleComplex, Z, z)
 EIGEN_MAGMA_GEMV_SPECIALIZATION(scomplex, magmaFloatComplex,  C, c)
 
