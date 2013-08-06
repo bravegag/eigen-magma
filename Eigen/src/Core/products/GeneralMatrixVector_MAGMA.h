@@ -33,7 +33,10 @@
 #ifndef EIGEN_GENERAL_MATRIX_VECTOR_MAGMA_H
 #define EIGEN_GENERAL_MATRIX_VECTOR_MAGMA_H
 
-namespace Eigen { 
+#include <stdio.h>
+#include <magma.h>
+
+namespace Eigen {
 
 namespace internal {
 
@@ -86,7 +89,7 @@ EIGEN_MAGMA_GEMV_SPECIALIZE(float)
 EIGEN_MAGMA_GEMV_SPECIALIZE(dcomplex)
 EIGEN_MAGMA_GEMV_SPECIALIZE(scomplex)
 
-#define EIGEN_MAGMA_GEMV_SPECIALIZATION(EIGTYPE,MAGMATYPE,MAGMAPREFIX) \
+#define EIGEN_MAGMA_GEMV_SPECIALIZATION(EIGTYPE,MAGMATYPE,MAGMAPREFIX,MAGMAPREFIXLOW) \
 template<typename Index, int LhsStorageOrder, bool ConjugateLhs, bool ConjugateRhs> \
 struct general_matrix_vector_product_gemv<Index,EIGTYPE,LhsStorageOrder,ConjugateLhs,EIGTYPE,ConjugateRhs> \
 { \
@@ -98,7 +101,7 @@ static EIGEN_DONT_INLINE void run( \
   const EIGTYPE* rhs, Index rhsIncr, \
   EIGTYPE* res, Index resIncr, EIGTYPE alpha) \
 { \
-  MAGMA_INT m=rows, n=cols, lda=lhsStride, incx=rhsIncr, incy=resIncr; \
+  magma_int_t m=rows, n=cols, lda=lhsStride, incx=rhsIncr, incy=resIncr; \
   MAGMATYPE alpha_, beta_; \
   const EIGTYPE *x_ptr, myone(1); \
   char trans=(LhsStorageOrder==ColMajor) ? 'N' : (ConjugateLhs) ? 'C' : 'T'; \
@@ -115,14 +118,52 @@ static EIGEN_DONT_INLINE void run( \
     x_ptr=x_tmp.data(); \
     incx=1; \
   } else x_ptr=rhs; \
-  MAGMAPREFIX##gemv(&trans, &m, &n, &alpha_, (const MAGMATYPE*)lhs, &lda, (const MAGMATYPE*)x_ptr, &incx, &beta_, (MAGMATYPE*)res, &incy); \
+\
+  magma_trans_t trans = (LhsStorageOrder == RowMajor) ? ((ConjugateLhs) ? MagmaConjTrans : MagmaTrans) : MagmaNoTrans; \
+  magma_int_t M, N, Xm, Ym, sizeA, sizeX, sizeY; \
+  M = rows, N = cols; \
+/* TODO:? lda = ((M+31)/32)*32; */ \
+\
+  if ( trans == MagmaNoTrans ) { \
+    Xm = N; \
+    Ym = M; \
+  } else { \
+    Xm = M; \
+    Ym = N; \
+  } \
+\
+  sizeA = lda*N; \
+  sizeX = incx*Xm; \
+  sizeY = incy*Ym; \
+\
+  const MAGMATYPE *hA, *hX, *hY; \
+  MAGMATYPE *dA, *dX, *dY; \
+  hA = lhs; \
+  hX = x_ptr; \
+  hY = res; \
+\
+  MAGMA_DEVALLOC( dA, MAGMATYPE, sizeA ); \
+  MAGMA_DEVALLOC( dX, MAGMATYPE, sizeX ); \
+  MAGMA_DEVALLOC( dY, MAGMATYPE, sizeY ); \
+\
+  magma_dsetmatrix( M, N, hA, lda, dA, lda ); \
+  magma_dsetvector( Xm, hX, incx, dX, incx ); \
+  magma_dsetvector( Ym, hY, incy, dY, incy ); \
+\
+  cublas##MAGMAPREFIX##gemv( trans, M, N, alpha, dA, lda, dX, incx, beta, dY, incy ); \
+\
+  magma_dgetvector( Ym, dY, incy, hY, incy ); \
+\
+  MAGMA_DEVFREE( dA ); \
+  MAGMA_DEVFREE( dX ); \
+  MAGMA_DEVFREE( dY );	 \
 }\
 };
 
-EIGEN_MAGMA_GEMV_SPECIALIZATION(double,   double,        d)
-EIGEN_MAGMA_GEMV_SPECIALIZATION(float,    float,         s)
-EIGEN_MAGMA_GEMV_SPECIALIZATION(dcomplex, magmaDoubleComplex, z)
-EIGEN_MAGMA_GEMV_SPECIALIZATION(scomplex, magmaFloatComplex,  c)
+EIGEN_MAGMA_GEMV_SPECIALIZATION(double,   double,        	  D, d)
+EIGEN_MAGMA_GEMV_SPECIALIZATION(float,    float,         	  S, s)
+EIGEN_MAGMA_GEMV_SPECIALIZATION(dcomplex, magmaDoubleComplex, Z, z)
+EIGEN_MAGMA_GEMV_SPECIALIZATION(scomplex, magmaFloatComplex,  C, c)
 
 } // end namespase internal
 

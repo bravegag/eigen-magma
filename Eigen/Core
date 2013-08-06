@@ -368,7 +368,7 @@ using std::ptrdiff_t;
 // TODO: implement
 #ifdef EIGEN_USE_CUBLAS
 #include "src/Core/products/GeneralMatrixMatrix_MAGMA.h"
-//#include "src/Core/products/GeneralMatrixVector_MAGMA.h"
+#include "src/Core/products/GeneralMatrixVector_MAGMA.h"
 //#include "src/Core/products/GeneralMatrixMatrixTriangular_MAGMA.h"
 //#include "src/Core/products/SelfadjointMatrixMatrix_MAGMA.h"
 //#include "src/Core/products/SelfadjointMatrixVector_MAGMA.h"
