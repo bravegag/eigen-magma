@@ -35,6 +35,7 @@
 
 #include <stdio.h>
 #include <magma.h>
+#include "Eigen/src/Core/util/MAGMA_support.h"
 
 namespace Eigen {
 
@@ -101,16 +102,14 @@ static EIGEN_DONT_INLINE void run( \
   const EIGTYPE* rhs, Index rhsIncr, \
   EIGTYPE* res, Index resIncr, EIGTYPE alpha) \
 { \
-  magma_int_t m=rows, n=cols, lda=lhsStride, incx=rhsIncr, incy=resIncr; \
-  MAGMATYPE alpha_, beta_; \
-  const EIGTYPE *x_ptr, myone(1); \
-  char trans=(LhsStorageOrder==ColMajor) ? 'N' : (ConjugateLhs) ? 'C' : 'T'; \
+  magma_int_t M=rows, N=cols, lda=lhsStride, incx=rhsIncr, incy=resIncr; \
+  MAGMATYPE alpha_, beta_ = 1; \
+  const EIGTYPE *x_ptr; \
   if (LhsStorageOrder==RowMajor) { \
-    m=cols; \
-    n=rows; \
+    M=cols; \
+    N=rows; \
   }\
-  assign_scalar_eig2mkl(alpha_, alpha); \
-  assign_scalar_eig2mkl(beta_, myone); \
+  assign_scalar_eig2magma(alpha_, alpha); \
   GEMVVector x_tmp; \
   if (ConjugateRhs) { \
     Map<const GEMVVector, 0, InnerStride<> > map_x(rhs,cols,1,InnerStride<>(incx)); \
@@ -120,9 +119,8 @@ static EIGEN_DONT_INLINE void run( \
   } else x_ptr=rhs; \
 \
   magma_trans_t trans = (LhsStorageOrder == RowMajor) ? ((ConjugateLhs) ? MagmaConjTrans : MagmaTrans) : MagmaNoTrans; \
-  magma_int_t M, N, Xm, Ym, sizeA, sizeX, sizeY; \
-  M = rows, N = cols; \
-/* TODO:? lda = ((M+31)/32)*32; */ \
+  magma_int_t Xm, Ym, sizeA, sizeX, sizeY; \
+  /* lda = ((M+31)/32)*32; */ \
 \
   if ( trans == MagmaNoTrans ) { \
     Xm = N; \
@@ -136,7 +134,8 @@ static EIGEN_DONT_INLINE void run( \
   sizeX = incx*Xm; \
   sizeY = incy*Ym; \
 \
-  const MAGMATYPE *hA, *hX, *hY; \
+  const MAGMATYPE *hA, *hX; \
+  MAGMATYPE *hY; \
   MAGMATYPE *dA, *dX, *dY; \
   hA = lhs; \
   hX = x_ptr; \
@@ -150,7 +149,7 @@ static EIGEN_DONT_INLINE void run( \
   magma_dsetvector( Xm, hX, incx, dX, incx ); \
   magma_dsetvector( Ym, hY, incy, dY, incy ); \
 \
-  cublas##MAGMAPREFIX##gemv( trans, M, N, alpha, dA, lda, dX, incx, beta, dY, incy ); \
+  cublas##MAGMAPREFIX##gemv( trans, M, N, alpha_, dA, lda, dX, incx, beta_, dY, incy ); \
 \
   magma_dgetvector( Ym, dY, incy, hY, incy ); \
 \
