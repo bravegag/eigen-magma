@@ -55,8 +55,9 @@ struct triangular_solve_matrix<EIGTYPE,Index,OnTheLeft,Mode,Conjugate,TriStorage
   { \
    magma_int_t M = size, N = otherSize; \
    magma_side_t side = MagmaLeft; \
-   magma_int_t lda, ldb, ldda, lddb; \
-   MAGMATYPE *h_A, *h_B, *d_A, *d_B; \
+   magma_int_t lda, ldb, ldda, lddb, Ak; \
+   const MAGMATYPE *h_A; \
+   MAGMATYPE *h_B, *d_A, *d_B; \
 \
    /* Set alpha_ */ \
    MAGMATYPE alpha; \
@@ -100,8 +101,8 @@ struct triangular_solve_matrix<EIGTYPE,Index,OnTheLeft,Mode,Conjugate,TriStorage
    MAGMA_DEVALLOC( d_A, MAGMATYPE, ldda*Ak ); \
    MAGMA_DEVALLOC( d_B, MAGMATYPE, lddb*N  ); \
 \
-   hA = (const MAGMATYPE*)a; \
-   hB = (MAGMATYPE*)_other; \
+   h_A = (const MAGMATYPE*)a; \
+   h_B = (MAGMATYPE*)_other; \
 \
    magma_dsetmatrix( Ak, Ak, h_A, lda, d_A, ldda ); \
    magma_dsetmatrix( M, N, h_B, ldb, d_B, lddb ); \
@@ -116,10 +117,10 @@ struct triangular_solve_matrix<EIGTYPE,Index,OnTheLeft,Mode,Conjugate,TriStorage
  } \
 };
 
-EIGEN_MAGMA_TRSM_L(double, 	 double,				d)
-EIGEN_MAGMA_TRSM_L(dcomplex, magmaDoubleComplex,	z)
-EIGEN_MAGMA_TRSM_L(float, 	 float,				s)
-EIGEN_MAGMA_TRSM_L(scomplex, magmaFloatComplex,	c)
+EIGEN_MAGMA_TRSM_L(double,	double,			d)
+EIGEN_MAGMA_TRSM_L(dcomplex, 	magmaDoubleComplex,	z)
+EIGEN_MAGMA_TRSM_L(float,	float,			s)
+EIGEN_MAGMA_TRSM_L(scomplex, 	magmaFloatComplex,	c)
 
 
 // implements RightSide general * op(triangular)^-1
@@ -140,8 +141,9 @@ struct triangular_solve_matrix<EIGTYPE,Index,OnTheRight,Mode,Conjugate,TriStorag
   { \
    magma_int_t M = otherSize, N = size, lda, ldb; \
    magma_side_t side = MagmaRight; \
-   magma_int_t lda, ldb, ldda, lddb; \
-   MAGMATYPE *h_A, *h_B, *d_A, *d_B; \
+   magma_int_t lda, ldb, ldda, lddb. Ak; \
+   const MAGMATYPE *h_A; \
+   MAGMATYPE *h_B, *d_A, *d_B; \
 \
    /* Set alpha_ */ \
    MAGMATYPE alpha; \
@@ -185,8 +187,8 @@ struct triangular_solve_matrix<EIGTYPE,Index,OnTheRight,Mode,Conjugate,TriStorag
    MAGMA_DEVALLOC( d_A, MAGMATYPE, ldda*Ak ); \
    MAGMA_DEVALLOC( d_B, MAGMATYPE, lddb*N  ); \
 \
-   hA = (const MAGMATYPE*)a; \
-   hB = (MAGMATYPE*)_other; \
+   h_A = (const MAGMATYPE*)a; \
+   h_B = (MAGMATYPE*)_other; \
 \
    magma_dsetmatrix( Ak, Ak, h_A, lda, d_A, ldda ); \
    magma_dsetmatrix( M, N, h_B, ldb, d_B, lddb ); \
