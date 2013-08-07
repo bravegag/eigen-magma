@@ -25,7 +25,7 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  ********************************************************************************
- *   Content : Eigen bindings to Intel(R) MAGMA
+ *   Content : Eigen bindings to MAGMA
  *   Triangular matrix * matrix product functionality based on ?TRMM.
  ********************************************************************************
 */
@@ -53,20 +53,23 @@ struct triangular_solve_matrix<EIGTYPE,Index,OnTheLeft,Mode,Conjugate,TriStorage
       const EIGTYPE* _tri, Index triStride, \
       EIGTYPE* _other, Index otherStride, level3_blocking<EIGTYPE,EIGTYPE>& /*blocking*/) \
   { \
-   MAGMA_INT m = size, n = otherSize, lda, ldb; \
-   char side = 'L', uplo, diag='N', transa; \
+   magma_int_t M = size, N = otherSize; \
+   magma_side_t side = MagmaLeft; \
+   magma_int_t lda, ldb, ldda, lddb; \
+   MAGMATYPE *h_A, *h_B, *d_A, *d_B; \
+\
    /* Set alpha_ */ \
    MAGMATYPE alpha; \
    EIGTYPE myone(1); \
-   assign_scalar_eig2mkl(alpha, myone); \
+   assign_scalar_eig2magma(alpha, myone); \
    ldb = otherStride;\
 \
    const EIGTYPE *a; \
 /* Set trans */ \
-   transa = (TriStorageOrder==RowMajor) ? ((Conjugate) ? 'C' : 'T') : 'N'; \
+   magma_trans_t transA = (TriStorageOrder == RowMajor) ? ((ConjugateLhs) ? MagmaConjTrans : MagmaTrans) : MagmaNoTrans; \
 /* Set uplo */ \
-   uplo = IsLower ? 'L' : 'U'; \
-   if (TriStorageOrder==RowMajor) uplo = (uplo == 'L') ? 'U' : 'L'; \
+   magma_uplo_t uplo = IsLower ? MagmaLower : MagmaUpper; \
+   if (TriStorageOrder==RowMajor) uplo = (uplo == MagmaLower) ? MagmaUpper : MagmaLower; \
 /* Set a, lda */ \
    typedef Matrix<EIGTYPE, Dynamic, Dynamic, TriStorageOrder> MatrixTri; \
    Map<const MatrixTri, 0, OuterStride<> > tri(_tri,size,size,OuterStride<>(triStride)); \
@@ -80,16 +83,43 @@ struct triangular_solve_matrix<EIGTYPE,Index,OnTheLeft,Mode,Conjugate,TriStorage
      a = _tri; \
      lda = triStride; \
    } \
-   if (IsUnitDiag) diag='U'; \
+   magma_diag_t diag = (IsUnitDiag) ? 'U' : 'N'; \
+\
+   if ( side == MagmaLeft ) { \
+	   lda = M; \
+	   Ak = M; \
+   } else { \
+	   lda = N; \
+	   Ak = N; \
+   } \
+   ldb = M; \
+\
+   ldda = ((lda+31)/32)*32; \
+   lddb = ((ldb+31)/32)*32; \
+\
+   MAGMA_DEVALLOC( d_A, MAGMATYPE, ldda*Ak ); \
+   MAGMA_DEVALLOC( d_B, MAGMATYPE, lddb*N  ); \
+\
+   hA = (const MAGMATYPE*)a; \
+   hB = (MAGMATYPE*)_other; \
+\
+   magma_dsetmatrix( Ak, Ak, h_A, lda, d_A, ldda ); \
+   magma_dsetmatrix( M, N, h_B, ldb, d_B, lddb ); \
+\
 /* call ?trsm*/ \
-   MAGMAPREFIX##trsm(&side, &uplo, &transa, &diag, &m, &n, &alpha, (const MAGMATYPE*)a, &lda, (MAGMATYPE*)_other, &ldb); \
+   magmablas_##MAGMAPREFIX##trsm( side, uplo, transA, diag, M, N, alpha, d_A, ldda, d_B, lddb ); \
+\
+   magma_dgetmatrix( M, N, d_B, lddb, h_B, ldb ); \
+\
+   MAGMA_DEVFREE( d_A ); \
+   MAGMA_DEVFREE( d_B ); \
  } \
 };
 
-EIGEN_MAGMA_TRSM_L(double, double, d)
-EIGEN_MAGMA_TRSM_L(dcomplex, magmaDoubleComplex, z)
-EIGEN_MAGMA_TRSM_L(float, float, s)
-EIGEN_MAGMA_TRSM_L(scomplex, magmaFloatComplex, c)
+EIGEN_MAGMA_TRSM_L(double, 	 double,				d)
+EIGEN_MAGMA_TRSM_L(dcomplex, magmaDoubleComplex,	z)
+EIGEN_MAGMA_TRSM_L(float, 	 float,				s)
+EIGEN_MAGMA_TRSM_L(scomplex, magmaFloatComplex,	c)
 
 
 // implements RightSide general * op(triangular)^-1
@@ -108,20 +138,23 @@ struct triangular_solve_matrix<EIGTYPE,Index,OnTheRight,Mode,Conjugate,TriStorag
       const EIGTYPE* _tri, Index triStride, \
       EIGTYPE* _other, Index otherStride, level3_blocking<EIGTYPE,EIGTYPE>& /*blocking*/) \
   { \
-   MAGMA_INT m = otherSize, n = size, lda, ldb; \
-   char side = 'R', uplo, diag='N', transa; \
+   magma_int_t M = otherSize, N = size, lda, ldb; \
+   magma_side_t side = MagmaRight; \
+   magma_int_t lda, ldb, ldda, lddb; \
+   MAGMATYPE *h_A, *h_B, *d_A, *d_B; \
+\
    /* Set alpha_ */ \
    MAGMATYPE alpha; \
    EIGTYPE myone(1); \
-   assign_scalar_eig2mkl(alpha, myone); \
+   assign_scalar_eig2magma(alpha, myone); \
    ldb = otherStride;\
 \
    const EIGTYPE *a; \
 /* Set trans */ \
-   transa = (TriStorageOrder==RowMajor) ? ((Conjugate) ? 'C' : 'T') : 'N'; \
+   magma_trans_t transA = (TriStorageOrder == RowMajor) ? ((ConjugateLhs) ? MagmaConjTrans : MagmaTrans) : MagmaNoTrans; \
 /* Set uplo */ \
-   uplo = IsLower ? 'L' : 'U'; \
-   if (TriStorageOrder==RowMajor) uplo = (uplo == 'L') ? 'U' : 'L'; \
+   magma_uplo_t uplo = IsLower ? MagmaLower : MagmaUpper; \
+   if (TriStorageOrder==RowMajor) uplo = (uplo == MagmaLower) ? MagmaUpper : MagmaLower; \
 /* Set a, lda */ \
    typedef Matrix<EIGTYPE, Dynamic, Dynamic, TriStorageOrder> MatrixTri; \
    Map<const MatrixTri, 0, OuterStride<> > tri(_tri,size,size,OuterStride<>(triStride)); \
@@ -135,17 +168,43 @@ struct triangular_solve_matrix<EIGTYPE,Index,OnTheRight,Mode,Conjugate,TriStorag
      a = _tri; \
      lda = triStride; \
    } \
-   if (IsUnitDiag) diag='U'; \
-/* call ?trsm*/ \
-   MAGMAPREFIX##trsm(&side, &uplo, &transa, &diag, &m, &n, &alpha, (const MAGMATYPE*)a, &lda, (MAGMATYPE*)_other, &ldb); \
-   /*std::cout << "TRMS_L specialization!\n";*/ \
- } \
+   magma_diag_t diag = (IsUnitDiag) ? 'U' : 'N'; \
+\
+   if ( side == MagmaLeft ) { \
+	 lda = M; \
+   	 Ak = M; \
+   } else { \
+     lda = N; \
+   	 Ak = N; \
+   } \
+   ldb = M; \
+\
+   ldda = ((lda+31)/32)*32; \
+   lddb = ((ldb+31)/32)*32; \
+\
+   MAGMA_DEVALLOC( d_A, MAGMATYPE, ldda*Ak ); \
+   MAGMA_DEVALLOC( d_B, MAGMATYPE, lddb*N  ); \
+\
+   hA = (const MAGMATYPE*)a; \
+   hB = (MAGMATYPE*)_other; \
+\
+   magma_dsetmatrix( Ak, Ak, h_A, lda, d_A, ldda ); \
+   magma_dsetmatrix( M, N, h_B, ldb, d_B, lddb ); \
+\
+   /* call ?trsm*/ \
+   magmablas_##MAGMAPREFIX##trsm( side, uplo, transA, diag, M, N, alpha, d_A, ldda, d_B, lddb ); \
+\
+   magma_dgetmatrix( M, N, d_B, lddb, h_B, ldb ); \
+\
+   MAGMA_DEVFREE( d_A ); \
+   MAGMA_DEVFREE( d_B ); \
+  } \
 };
 
-EIGEN_MAGMA_TRSM_R(double, double, d)
-EIGEN_MAGMA_TRSM_R(dcomplex, magmaDoubleComplex, z)
-EIGEN_MAGMA_TRSM_R(float, float, s)
-EIGEN_MAGMA_TRSM_R(scomplex, magmaFloatComplex, c)
+EIGEN_MAGMA_TRSM_R(double, 	 double,				d)
+EIGEN_MAGMA_TRSM_R(dcomplex, magmaDoubleComplex,	z)
+EIGEN_MAGMA_TRSM_R(float, 	 float,				s)
+EIGEN_MAGMA_TRSM_R(scomplex, magmaFloatComplex,	c)
 
 
 } // end namespace internal
