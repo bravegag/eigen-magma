@@ -66,7 +66,7 @@ struct triangular_solve_matrix<EIGTYPE,Index,OnTheLeft,Mode,Conjugate,TriStorage
 \
    const EIGTYPE *a; \
 /* Set trans */ \
-   magma_trans_t transA = (TriStorageOrder == RowMajor) ? ((ConjugateLhs) ? MagmaConjTrans : MagmaTrans) : MagmaNoTrans; \
+   magma_trans_t transA = (TriStorageOrder == RowMajor) ? ((Conjugate) ? MagmaConjTrans : MagmaTrans) : MagmaNoTrans; \
 /* Set uplo */ \
    magma_uplo_t uplo = IsLower ? MagmaLower : MagmaUpper; \
    if (TriStorageOrder==RowMajor) uplo = (uplo == MagmaLower) ? MagmaUpper : MagmaLower; \
@@ -151,7 +151,7 @@ struct triangular_solve_matrix<EIGTYPE,Index,OnTheRight,Mode,Conjugate,TriStorag
 \
    const EIGTYPE *a; \
 /* Set trans */ \
-   magma_trans_t transA = (TriStorageOrder == RowMajor) ? ((ConjugateLhs) ? MagmaConjTrans : MagmaTrans) : MagmaNoTrans; \
+   magma_trans_t transA = (TriStorageOrder == RowMajor) ? ((Conjugate) ? MagmaConjTrans : MagmaTrans) : MagmaNoTrans; \
 /* Set uplo */ \
    magma_uplo_t uplo = IsLower ? MagmaLower : MagmaUpper; \
    if (TriStorageOrder==RowMajor) uplo = (uplo == MagmaLower) ? MagmaUpper : MagmaLower; \
