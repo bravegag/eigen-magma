@@ -36,7 +36,7 @@
 #include "Eigen/src/Core/util/MAGMA_support.h"
 #include <iostream>
 
-namespace Eigen { 
+namespace Eigen {
 
 namespace internal {
 
@@ -48,19 +48,34 @@ template<> struct mkl_llt<EIGTYPE> \
   template<typename MatrixType> \
   static inline typename MatrixType::Index potrf(MatrixType& m, char uplo) \
   { \
-    lapack_int matrix_order; \
-    lapack_int size, lda, info, StorageOrder; \
+    magma_int_t matrix_order; \
+    magma_int_t N, size, lda, info, StorageOrder; \
+    MAGMGATYPE *h_A, *h_R; \
+	MAGMGATYPE *d_A; \
     EIGTYPE* a; \
+    MAGMGATYPE c_neg_one = MAGMA_D_NEG_ONE;
     eigen_assert(m.rows()==m.cols()); \
     /* Set up parameters for ?potrf */ \
     size = m.rows(); \
-    StorageOrder = MatrixType::Flags&RowMajorBit?RowMajor:ColMajor; \
-    matrix_order = StorageOrder==RowMajor ? LAPACK_ROW_MAJOR : LAPACK_COL_MAJOR; \
-    a = &(m.coeffRef(0,0)); \
+    N = m.rows(); \
     lda = m.outerStride(); \
+    n2  = lda*N; \
+    ldda = ((lda+31)/32)*32; \
+    StorageOrder = MatrixType::Flags&RowMajorBit?RowMajor:ColMajor; \
+    /* TODO: matrix_order = StorageOrder==RowMajor ? LAPACK_ROW_MAJOR : LAPACK_COL_MAJOR; */ \
+    a = &(m.coeffRef(0,0)); \
+    h_A = a; \
 \
+    TESTING_DEVALLOC(  d_A, double, ldda*N ); \
+    magma_dsetmatrix( N, N, h_A, lda, d_A, ldda ); \
+\
+	magma_##MAGMAPREFIX##potrf_gpu( uplo, N, d_A, ldda, &info );
     info = LAPACKE_##MAGMAPREFIX##potrf( matrix_order, uplo, size, (MAGMATYPE*)a, lda ); \
     info = (info==0) ? Success : NumericalIssue; \
+\
+	magma_dgetmatrix( N, N, d_A, ldda, h_A, lda ); \
+	TESTING_DEVFREE(  d_A ); \
+\
     return info; \
   } \
 }; \
@@ -90,10 +105,10 @@ template<> struct llt_inplace<EIGTYPE, Upper> \
   } \
 };
 
-EIGEN_MAGMA_LLT(double, double, d)
-EIGEN_MAGMA_LLT(float, float, s)
+EIGEN_MAGMA_LLT(double,	  double, 			  d)
+EIGEN_MAGMA_LLT(float,	  float,				  s)
 EIGEN_MAGMA_LLT(dcomplex, magmaDoubleComplex, z)
-EIGEN_MAGMA_LLT(scomplex, magmaFloatComplex, c)
+EIGEN_MAGMA_LLT(scomplex, magmaFloatComplex,	  c)
 
 } // end namespace internal
 
