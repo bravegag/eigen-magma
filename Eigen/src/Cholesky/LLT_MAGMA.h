@@ -49,17 +49,16 @@ template<> struct magma_llt<EIGTYPE> \
   static inline typename MatrixType::Index potrf(MatrixType& m, char uplo) \
   { \
     magma_int_t matrix_order; \
-    magma_int_t N, size, lda, info, StorageOrder; \
-    MAGMGATYPE *h_A, *h_R; \
-    MAGMGATYPE *d_A; \
+    magma_int_t N, size, lda, ldda, info, StorageOrder; \
+    MAGMATYPE *h_A, *h_R; \
+    MAGMATYPE *d_A; \
     EIGTYPE* a; \
-    MAGMGATYPE c_neg_one = MAGMA_D_NEG_ONE; \
+    MAGMATYPE c_neg_one = MAGMA_D_NEG_ONE; \
     eigen_assert(m.rows()==m.cols()); \
     /* Set up parameters for ?potrf */ \
     size = m.rows(); \
     N = m.rows(); \
     lda = m.outerStride(); \
-    n2  = lda*N; \
     ldda = ((lda+31)/32)*32; \
     StorageOrder = MatrixType::Flags&RowMajorBit?RowMajor:ColMajor; \
     /* TODO: matrix_order = StorageOrder==RowMajor ? LAPACK_ROW_MAJOR : LAPACK_COL_MAJOR; */ \
