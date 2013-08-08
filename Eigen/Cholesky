@@ -25,6 +25,9 @@
 #ifdef EIGEN_USE_LAPACKE
 #include "src/Cholesky/LLT_MKL.h"
 #endif
+#ifdef EIGEN_USE_MAGMA
+#include "src/Cholesky/LLT_MAGMA.h"
+#endif
 
 #include "src/Core/util/ReenableStupidWarnings.h"
 

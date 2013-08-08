@@ -40,10 +40,10 @@ namespace Eigen {
 
 namespace internal {
 
-template<typename Scalar> struct mkl_llt;
+template<typename Scalar> struct magma_llt;
 
 #define EIGEN_MAGMA_LLT(EIGTYPE, MAGMATYPE, MAGMAPREFIX) \
-template<> struct mkl_llt<EIGTYPE> \
+template<> struct magma_llt<EIGTYPE> \
 { \
   template<typename MatrixType> \
   static inline typename MatrixType::Index potrf(MatrixType& m, char uplo) \
@@ -51,9 +51,9 @@ template<> struct mkl_llt<EIGTYPE> \
     magma_int_t matrix_order; \
     magma_int_t N, size, lda, info, StorageOrder; \
     MAGMGATYPE *h_A, *h_R; \
-	MAGMGATYPE *d_A; \
+    MAGMGATYPE *d_A; \
     EIGTYPE* a; \
-    MAGMGATYPE c_neg_one = MAGMA_D_NEG_ONE;
+    MAGMGATYPE c_neg_one = MAGMA_D_NEG_ONE; \
     eigen_assert(m.rows()==m.cols()); \
     /* Set up parameters for ?potrf */ \
     size = m.rows(); \
@@ -66,15 +66,14 @@ template<> struct mkl_llt<EIGTYPE> \
     a = &(m.coeffRef(0,0)); \
     h_A = a; \
 \
-    TESTING_DEVALLOC(  d_A, double, ldda*N ); \
+    MAGMA_DEVALLOC(  d_A, double, ldda*N ); \
     magma_dsetmatrix( N, N, h_A, lda, d_A, ldda ); \
 \
-	magma_##MAGMAPREFIX##potrf_gpu( uplo, N, d_A, ldda, &info );
-    info = LAPACKE_##MAGMAPREFIX##potrf( matrix_order, uplo, size, (MAGMATYPE*)a, lda ); \
+    magma_##MAGMAPREFIX##potrf_gpu( uplo, N, d_A, ldda, &info ); \
     info = (info==0) ? Success : NumericalIssue; \
 \
-	magma_dgetmatrix( N, N, d_A, ldda, h_A, lda ); \
-	TESTING_DEVFREE(  d_A ); \
+    magma_dgetmatrix( N, N, d_A, ldda, h_A, lda ); \
+    MAGMA_DEVFREE(  d_A ); \
 \
     return info; \
   } \
@@ -84,7 +83,7 @@ template<> struct llt_inplace<EIGTYPE, Lower> \
   template<typename MatrixType> \
   static typename MatrixType::Index blocked(MatrixType& m) \
   { \
-    return mkl_llt<EIGTYPE>::potrf(m, 'L'); \
+    return magma_llt<EIGTYPE>::potrf(m, 'L'); \
   } \
   template<typename MatrixType, typename VectorType> \
   static typename MatrixType::Index rankUpdate(MatrixType& mat, const VectorType& vec, const typename MatrixType::RealScalar& sigma) \
@@ -95,7 +94,7 @@ template<> struct llt_inplace<EIGTYPE, Upper> \
   template<typename MatrixType> \
   static typename MatrixType::Index blocked(MatrixType& m) \
   { \
-    return mkl_llt<EIGTYPE>::potrf(m, 'U'); \
+    return magma_llt<EIGTYPE>::potrf(m, 'U'); \
   } \
   template<typename MatrixType, typename VectorType> \
   static typename MatrixType::Index rankUpdate(MatrixType& mat, const VectorType& vec, const typename MatrixType::RealScalar& sigma) \
@@ -105,10 +104,10 @@ template<> struct llt_inplace<EIGTYPE, Upper> \
   } \
 };
 
-EIGEN_MAGMA_LLT(double,	  double, 			  d)
-EIGEN_MAGMA_LLT(float,	  float,				  s)
-EIGEN_MAGMA_LLT(dcomplex, magmaDoubleComplex, z)
-EIGEN_MAGMA_LLT(scomplex, magmaFloatComplex,	  c)
+EIGEN_MAGMA_LLT(double,	  double,		d)
+EIGEN_MAGMA_LLT(float,	  float,		s)
+EIGEN_MAGMA_LLT(dcomplex, magmaDoubleComplex,	z)
+EIGEN_MAGMA_LLT(scomplex, magmaFloatComplex,	c)
 
 } // end namespace internal
 
