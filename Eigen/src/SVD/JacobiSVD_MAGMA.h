@@ -52,7 +52,7 @@ JacobiSVD<Matrix<EIGTYPE, Dynamic, Dynamic, EIGCOLROW, Dynamic, Dynamic>, ColPiv
   /*const RealScalar precision = RealScalar(2) * NumTraits<Scalar>::epsilon();*/ \
   m_nonzeroSingularValues = m_diagSize; \
 \
-  magma_int_t lda = matrix.outerStride(), ldu, ldvt, lwork, M = m_rows, N = m_cols; \
+  magma_int_t lda = matrix.outerStride(), ldu, ldvt, lwork, M = m_rows, N = m_cols, info; \
   MAGMATYPE *h_A, *h_R, *h_U, *h_VT, *h_work; \
   MAGMATYPE *h_S1, *h_S2; \
   char jobu, jobvt; \
@@ -82,7 +82,7 @@ JacobiSVD<Matrix<EIGTYPE, Dynamic, Dynamic, EIGCOLROW, Dynamic, Dynamic>, ColPiv
   lwork = (M+N)*nb + 3*min_mn + 2*min_mn*min_mn; \
   MAGMA_HOSTALLOC( h_work, MAGMATYPE, lwork ); \
 \
-  magma_##MAGMAPREFIX##gesvd( jobu, jobvt, M, N, h_R, M, h_S1, h_U, M, VT, N, h_work, lwork, &info ); \
+  magma_##MAGMAPREFIX##gesvd( jobu, jobvt, M, N, h_R, M, h_S1, h_U, M, h_VT, N, h_work, lwork, &info ); \
   if (info != 0) { \
       printf("magma_dgesvd returned error %d: %s.\n", (int) info, magma_strerror( info )); \
   } \
@@ -93,15 +93,15 @@ JacobiSVD<Matrix<EIGTYPE, Dynamic, Dynamic, EIGCOLROW, Dynamic, Dynamic>, ColPiv
   return *this; \
 }
 
-EIGEN_MAGMA_SVD(double,   double,        	  double, d, ColMajor)
-EIGEN_MAGMA_SVD(float,    float,         	  float , s, ColMajor)
-EIGEN_MAGMA_SVD(dcomplex, magmaDoubleComplex, double, z, ColMajor)
-EIGEN_MAGMA_SVD(scomplex, magmaFloatComplex,  float , c, ColMajor)
+EIGEN_MAGMA_SVD(double,   double,		double, d, ColMajor)
+EIGEN_MAGMA_SVD(float,    float,		float , s, ColMajor)
+EIGEN_MAGMA_SVD(dcomplex, magmaDoubleComplex,	double, z, ColMajor)
+EIGEN_MAGMA_SVD(scomplex, magmaFloatComplex,	float , c, ColMajor)
 
-EIGEN_MAGMA_SVD(double,   double,        	  double, d, RowMajor)
-EIGEN_MAGMA_SVD(float,    float,         	  float , s, RowMajor)
-EIGEN_MAGMA_SVD(dcomplex, magmaDoubleComplex, double, z, RowMajor)
-EIGEN_MAGMA_SVD(scomplex, magmaFloatComplex,  float , c, RowMajor)
+EIGEN_MAGMA_SVD(double,   double,		double, d, RowMajor)
+EIGEN_MAGMA_SVD(float,    float,		float , s, RowMajor)
+EIGEN_MAGMA_SVD(dcomplex, magmaDoubleComplex,	double, z, RowMajor)
+EIGEN_MAGMA_SVD(scomplex, magmaFloatComplex,	float , c, RowMajor)
 
 } // end namespace Eigen
 
