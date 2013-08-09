@@ -39,7 +39,7 @@ namespace Eigen {
 
 /** \internal Specialization for the data types supported by MAGMA */
 
-#define EIGEN_MAGMA_SVD(EIGTYPE, MAGMATYPE, MAGMARTYPE, MAGMAPREFIX, EIGCOLROW, MAGMACOLROW) \
+#define EIGEN_MAGMA_SVD(EIGTYPE, MAGMATYPE, MAGMARTYPE, MAGMAPREFIX, EIGCOLROW) \
 template<> inline \
 JacobiSVD<Matrix<EIGTYPE, Dynamic, Dynamic, EIGCOLROW, Dynamic, Dynamic>, ColPivHouseholderQRPreconditioner>& \
 JacobiSVD<Matrix<EIGTYPE, Dynamic, Dynamic, EIGCOLROW, Dynamic, Dynamic>, ColPivHouseholderQRPreconditioner>::compute(const Matrix<EIGTYPE, Dynamic, Dynamic, EIGCOLROW, Dynamic, Dynamic>& matrix, unsigned int computationOptions) \
@@ -53,9 +53,8 @@ JacobiSVD<Matrix<EIGTYPE, Dynamic, Dynamic, EIGCOLROW, Dynamic, Dynamic>, ColPiv
   m_nonzeroSingularValues = m_diagSize; \
 \
   magma_int_t lda = matrix.outerStride(), ldu, ldvt, lwork, M = m_rows, N = m_cols; \
-  magma_int_t matrix_order = MAGMACOLROW; \
-  MAGMATYPE *h_A, *h_R, *U, *VT, *h_work; \
-  MAGMATYPE *S1, *S2; \
+  MAGMATYPE *h_A, *h_R, *h_U, *h_VT, *h_work; \
+  MAGMATYPE *h_S1, *h_S2; \
   char jobu, jobvt; \
   MAGMATYPE *u, *vt, dummy; \
   jobu  = (m_computeFullU) ? 'A' : (m_computeThinU) ? 'S' : 'N'; \
@@ -63,7 +62,10 @@ JacobiSVD<Matrix<EIGTYPE, Dynamic, Dynamic, EIGCOLROW, Dynamic, Dynamic>, ColPiv
   if (computeU()) { \
     ldu  = m_matrixU.outerStride(); \
     u    = (MAGMATYPE*)m_matrixU.data(); \
-  } else { ldu=1; u=&dummy; }\
+  } else { \
+	ldu  = 1; \
+	u    = &dummy; \
+  } \
   MatrixType localV; \
   ldvt = (m_computeFullV) ? m_cols : (m_computeThinV) ? m_diagSize : 1; \
   if (computeV()) { \
@@ -91,15 +93,15 @@ JacobiSVD<Matrix<EIGTYPE, Dynamic, Dynamic, EIGCOLROW, Dynamic, Dynamic>, ColPiv
   return *this; \
 }
 
-EIGEN_MAGMA_SVD(double,   double,        double, d, ColMajor, LAPACK_COL_MAJOR)
-EIGEN_MAGMA_SVD(float,    float,         float , s, ColMajor, LAPACK_COL_MAJOR)
-EIGEN_MAGMA_SVD(dcomplex, magmaDoubleComplex, double, z, ColMajor, LAPACK_COL_MAJOR)
-EIGEN_MAGMA_SVD(scomplex, magmaFloatComplex,  float , c, ColMajor, LAPACK_COL_MAJOR)
+EIGEN_MAGMA_SVD(double,   double,        	  double, d, ColMajor)
+EIGEN_MAGMA_SVD(float,    float,         	  float , s, ColMajor)
+EIGEN_MAGMA_SVD(dcomplex, magmaDoubleComplex, double, z, ColMajor)
+EIGEN_MAGMA_SVD(scomplex, magmaFloatComplex,  float , c, ColMajor)
 
-EIGEN_MAGMA_SVD(double,   double,        double, d, RowMajor, LAPACK_ROW_MAJOR)
-EIGEN_MAGMA_SVD(float,    float,         float , s, RowMajor, LAPACK_ROW_MAJOR)
-EIGEN_MAGMA_SVD(dcomplex, magmaDoubleComplex, double, z, RowMajor, LAPACK_ROW_MAJOR)
-EIGEN_MAGMA_SVD(scomplex, magmaFloatComplex,  float , c, RowMajor, LAPACK_ROW_MAJOR)
+EIGEN_MAGMA_SVD(double,   double,        	  double, d, RowMajor)
+EIGEN_MAGMA_SVD(float,    float,         	  float , s, RowMajor)
+EIGEN_MAGMA_SVD(dcomplex, magmaDoubleComplex, double, z, RowMajor)
+EIGEN_MAGMA_SVD(scomplex, magmaFloatComplex,  float , c, RowMajor)
 
 } // end namespace Eigen
 
