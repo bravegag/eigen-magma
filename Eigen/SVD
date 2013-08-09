@@ -25,6 +25,9 @@
 #if defined(EIGEN_USE_LAPACKE) && !defined(EIGEN_USE_LAPACKE_STRICT)
 #include "src/SVD/JacobiSVD_MKL.h"
 #endif
+#if defined(EIGEN_USE_MAGMA)
+#include "src/SVD/JacobiSVD_MAGMA.h"
+#endif
 #include "src/SVD/UpperBidiagonalization.h"
 
 #ifdef EIGEN2_SUPPORT

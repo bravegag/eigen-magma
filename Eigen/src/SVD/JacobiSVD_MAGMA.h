@@ -25,7 +25,7 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  ********************************************************************************
- *   Content : Eigen bindings to Intel(R) MAGMA
+ *   Content : Eigen bindings to MAGMA
  *    Singular Value Decomposition - SVD.
  ********************************************************************************
 */
@@ -52,8 +52,10 @@ JacobiSVD<Matrix<EIGTYPE, Dynamic, Dynamic, EIGCOLROW, Dynamic, Dynamic>, ColPiv
   /*const RealScalar precision = RealScalar(2) * NumTraits<Scalar>::epsilon();*/ \
   m_nonzeroSingularValues = m_diagSize; \
 \
-  lapack_int lda = matrix.outerStride(), ldu, ldvt; \
-  lapack_int matrix_order = MAGMACOLROW; \
+  magma_int_t lda = matrix.outerStride(), ldu, ldvt, lwork, M = m_rows, N = m_cols; \
+  magma_int_t matrix_order = MAGMACOLROW; \
+  MAGMATYPE *h_A, *h_R, *U, *VT, *h_work; \
+  MAGMATYPE *S1, *S2; \
   char jobu, jobvt; \
   MAGMATYPE *u, *vt, dummy; \
   jobu  = (m_computeFullU) ? 'A' : (m_computeThinU) ? 'S' : 'N'; \
@@ -70,7 +72,19 @@ JacobiSVD<Matrix<EIGTYPE, Dynamic, Dynamic, EIGCOLROW, Dynamic, Dynamic>, ColPiv
   } else { ldvt=1; vt=&dummy; }\
   Matrix<MAGMARTYPE, Dynamic, Dynamic> superb; superb.resize(m_diagSize, 1); \
   MatrixType m_temp; m_temp = matrix; \
-  LAPACKE_##MAGMAPREFIX##gesvd( matrix_order, jobu, jobvt, m_rows, m_cols, (MAGMATYPE*)m_temp.data(), lda, (MAGMARTYPE*)m_singularValues.data(), u, ldu, vt, ldvt, superb.data()); \
+\
+  h_R  = (MAGMATYPE*)m_temp.data(); \
+  h_S1 = (MAGMARTYPE*)m_singularValues.data(); \
+  h_U  = (MAGMARTYPE*)u; \
+  h_VT = (MAGMARTYPE*)vt; \
+  lwork = (M+N)*nb + 3*min_mn + 2*min_mn*min_mn; \
+  MAGMA_HOSTALLOC( h_work, MAGMATYPE, lwork ); \
+\
+  magma_##MAGMAPREFIX##gesvd( jobu, jobvt, M, N, h_R, M, h_S1, h_U, M, VT, N, h_work, lwork, &info ); \
+  if (info != 0) { \
+      printf("magma_dgesvd returned error %d: %s.\n", (int) info, magma_strerror( info )); \
+  } \
+  MAGMA_HOSTFREE( h_work ); \
   if (computeV()) m_matrixV = localV.adjoint(); \
  /* for(int i=0;i<m_diagSize;i++) if (m_singularValues.coeffRef(i) < precision) { m_nonzeroSingularValues--; m_singularValues.coeffRef(i)=RealScalar(0);}*/ \
   m_isInitialized = true; \
