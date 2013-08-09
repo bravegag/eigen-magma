@@ -52,7 +52,7 @@ JacobiSVD<Matrix<EIGTYPE, Dynamic, Dynamic, EIGCOLROW, Dynamic, Dynamic>, ColPiv
   /*const RealScalar precision = RealScalar(2) * NumTraits<Scalar>::epsilon();*/ \
   m_nonzeroSingularValues = m_diagSize; \
 \
-  magma_int_t lda = matrix.outerStride(), ldu, ldvt, lwork, M = m_rows, N = m_cols, info; \
+  magma_int_t lda = matrix.outerStride(), ldu, ldvt, lwork, M = m_rows, N = m_cols, min_mn, nb, n2, info; \
   MAGMATYPE *h_A, *h_R, *h_U, *h_VT, *h_work; \
   MAGMATYPE *h_S1, *h_S2; \
   char jobu, jobvt; \
@@ -79,6 +79,9 @@ JacobiSVD<Matrix<EIGTYPE, Dynamic, Dynamic, EIGCOLROW, Dynamic, Dynamic>, ColPiv
   h_S1 = (MAGMARTYPE*)m_singularValues.data(); \
   h_U  = (MAGMARTYPE*)u; \
   h_VT = (MAGMARTYPE*)vt; \
+  n2 = M*N; \
+  min_mn = M < N ? M : N; \
+  nb = magma_get_##MAGMAPREFIX##gesvd_nb(N); \
   lwork = (M+N)*nb + 3*min_mn + 2*min_mn*min_mn; \
   MAGMA_HOSTALLOC( h_work, MAGMATYPE, lwork ); \
 \
