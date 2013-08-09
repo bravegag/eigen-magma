@@ -1,8 +1,13 @@
-Eigen Magma
-===========
+h1. Eigen Magma
+
 MAGMA is a solid implementation of BLAS and linear algebra routines for multicore and GPU systems: http://icl.cs.utk.edu/magma/index.html
 
 Optional support of MAGMA in Eigen for large dense matrix computations would allow applications written using Eigen to profit from GPU and multi-GPU support of
 MAGMA.
 
 This project is a fork of Eigen 3.2 to use MAGMA (tested with version 1.4.0-beta2) as backend.
+
+h2. Sample project and benchmarks
+
+The following sister project offers a sample CMake client of Eigen MAGMA and benchmark results in Gflop/s for all functions implemented:
+https://github.com/bravegag/eigen-magma-benchmark
