@@ -98,13 +98,13 @@ JacobiSVD<Matrix<EIGTYPE, Dynamic, Dynamic, EIGCOLROW, Dynamic, Dynamic>, ColPiv
 
 EIGEN_MAGMA_SVD(double,   double,		double, d, ColMajor)
 EIGEN_MAGMA_SVD(float,    float,		float , s, ColMajor)
-EIGEN_MAGMA_SVD(dcomplex, magmaDoubleComplex,	double, z, ColMajor)
-EIGEN_MAGMA_SVD(scomplex, magmaFloatComplex,	float , c, ColMajor)
+//EIGEN_MAGMA_SVD(dcomplex, magmaDoubleComplex,	double, z, ColMajor)
+//EIGEN_MAGMA_SVD(scomplex, magmaFloatComplex,	float , c, ColMajor)
 
 EIGEN_MAGMA_SVD(double,   double,		double, d, RowMajor)
 EIGEN_MAGMA_SVD(float,    float,		float , s, RowMajor)
-EIGEN_MAGMA_SVD(dcomplex, magmaDoubleComplex,	double, z, RowMajor)
-EIGEN_MAGMA_SVD(scomplex, magmaFloatComplex,	float , c, RowMajor)
+//EIGEN_MAGMA_SVD(dcomplex, magmaDoubleComplex,	double, z, RowMajor)
+//EIGEN_MAGMA_SVD(scomplex, magmaFloatComplex,	float , c, RowMajor)
 
 } // end namespace Eigen
 
