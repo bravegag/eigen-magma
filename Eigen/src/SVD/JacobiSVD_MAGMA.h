@@ -52,11 +52,16 @@ JacobiSVD<Matrix<EIGTYPE, Dynamic, Dynamic, EIGCOLROW, Dynamic, Dynamic>, ColPiv
   /*const RealScalar precision = RealScalar(2) * NumTraits<Scalar>::epsilon();*/ \
   m_nonzeroSingularValues = m_diagSize; \
 \
-  magma_int_t lda = matrix.outerStride(), ldu, ldvt, lwork, M = m_rows, N = m_cols, min_mn, nb, n2, info; \
+  magma_int_t lda = matrix.outerStride(), ldu; \
+  magma_int_t ldvt, lwork, M, N, min_mn, nb, n2, info; \
   MAGMATYPE *h_A, *h_R, *h_U, *h_VT, *h_work; \
   MAGMATYPE *h_S1, *h_S2; \
   char jobu, jobvt; \
   MAGMATYPE *u, *vt, dummy; \
+\
+  M = m_rows; \
+  N = m_cols; \
+\
   jobu  = (m_computeFullU) ? 'A' : (m_computeThinU) ? 'S' : 'N'; \
   jobvt = (m_computeFullV) ? 'A' : (m_computeThinV) ? 'S' : 'N'; \
   if (computeU()) { \
@@ -85,9 +90,9 @@ JacobiSVD<Matrix<EIGTYPE, Dynamic, Dynamic, EIGCOLROW, Dynamic, Dynamic>, ColPiv
   lwork = (M+N)*nb + 3*min_mn + 2*min_mn*min_mn; \
   MAGMA_HOSTALLOC( h_work, MAGMATYPE, lwork ); \
 \
-  magma_##MAGMAPREFIX##gesvd( jobu, jobvt, M, N, h_R, M, h_S1, h_U, M, h_VT, N, h_work, lwork, &info ); \
+  magma_##MAGMAPREFIX##gesvd( jobu, jobvt, M, N, h_R, lda, h_S1, h_U, ldu, h_VT, N, h_work, lwork, &info ); \
   if (info != 0) { \
-      printf("magma_?gesvd returned error %d: %s.\n", (int) info, magma_strerror( info )); \
+      fprintf(stderr, "magma_?gesvd returned error %d: %s.\n", (int) info, magma_strerror( info )); \
   } \
   MAGMA_HOSTFREE( h_work ); \
   if (computeV()) m_matrixV = localV.adjoint(); \
