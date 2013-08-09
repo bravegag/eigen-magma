@@ -68,8 +68,8 @@ JacobiSVD<Matrix<EIGTYPE, Dynamic, Dynamic, EIGCOLROW, Dynamic, Dynamic>, ColPiv
     ldu  = m_matrixU.outerStride(); \
     u    = (MAGMATYPE*)m_matrixU.data(); \
   } else { \
-	ldu  = 1; \
-	u    = &dummy; \
+    ldu  = 1; \
+    u    = &dummy; \
   } \
   MatrixType localV; \
   ldvt = (m_computeFullV) ? m_cols : (m_computeThinV) ? m_diagSize : 1; \
