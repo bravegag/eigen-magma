@@ -102,7 +102,7 @@ static EIGEN_DONT_INLINE void run( \
   const EIGTYPE* rhs, Index rhsIncr, \
   EIGTYPE* res, Index resIncr, EIGTYPE alpha) \
 { \
-  magma_int_t M=rows, N=cols, lda=lhsStride, incx=rhsIncr, incy=resIncr; \
+  magma_int_t M=rows, N=cols, lda=lhsStride, ldda, incx=rhsIncr, incy=resIncr; \
   MAGMATYPE alpha_, beta_ = 1; \
   const EIGTYPE *x_ptr; \
   if (LhsStorageOrder==RowMajor) { \
@@ -120,17 +120,17 @@ static EIGEN_DONT_INLINE void run( \
 \
   magma_trans_t trans = (LhsStorageOrder == RowMajor) ? ((ConjugateLhs) ? MagmaConjTrans : MagmaTrans) : MagmaNoTrans; \
   magma_int_t Xm, Ym, sizeA, sizeX, sizeY; \
-  /* lda = ((M+31)/32)*32; */ \
+  ldda = ((lda+31)/32)*32; \
 \
   if ( trans == MagmaNoTrans ) { \
     Xm = N; \
     Ym = M; \
-  } else { \
+  } else {  \
     Xm = M; \
     Ym = N; \
   } \
 \
-  sizeA = lda*N; \
+  sizeA = ldda*N;  \
   sizeX = incx*Xm; \
   sizeY = incy*Ym; \
 \
@@ -145,17 +145,17 @@ static EIGEN_DONT_INLINE void run( \
   MAGMA_DEVALLOC( dX, MAGMATYPE, sizeX ); \
   MAGMA_DEVALLOC( dY, MAGMATYPE, sizeY ); \
 \
-  magma_dsetmatrix( M, N, hA, lda, dA, lda ); \
+  magma_dsetmatrix( M, N, hA, lda, dA, ldda ); \
   magma_dsetvector( Xm, hX, incx, dX, incx ); \
   magma_dsetvector( Ym, hY, incy, dY, incy ); \
 \
-  cublas##MAGMAPREFIX##gemv( trans, M, N, alpha_, dA, lda, dX, incx, beta_, dY, incy ); \
+  cublas##MAGMAPREFIX##gemv( trans, M, N, alpha_, dA, ldda, dX, incx, beta_, dY, incy ); \
 \
   magma_dgetvector( Ym, dY, incy, hY, incy ); \
 \
   MAGMA_DEVFREE( dA ); \
   MAGMA_DEVFREE( dX ); \
-  MAGMA_DEVFREE( dY );	 \
+  MAGMA_DEVFREE( dY ); \
 }\
 };
 
