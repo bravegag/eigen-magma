@@ -87,7 +87,7 @@ JacobiSVD<Matrix<EIGTYPE, Dynamic, Dynamic, EIGCOLROW, Dynamic, Dynamic>, ColPiv
 \
   magma_##MAGMAPREFIX##gesvd( jobu, jobvt, M, N, h_R, M, h_S1, h_U, M, h_VT, N, h_work, lwork, &info ); \
   if (info != 0) { \
-      printf("magma_dgesvd returned error %d: %s.\n", (int) info, magma_strerror( info )); \
+      printf("magma_?gesvd returned error %d: %s.\n", (int) info, magma_strerror( info )); \
   } \
   MAGMA_HOSTFREE( h_work ); \
   if (computeV()) m_matrixV = localV.adjoint(); \
