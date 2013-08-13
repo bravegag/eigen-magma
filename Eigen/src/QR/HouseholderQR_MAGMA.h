@@ -56,13 +56,13 @@ void householder_qr_inplace_blocked(MatrixQR& mat, HCoeffs& hCoeffs, \
 	magma_int_t lda  = mat.outerStride(); \
 	magma_int_t ldda = ((lda+31)/32)*32; \
 	MAGMA_DEVALLOC(  d_A, MAGMATYPE, ldda*N ); \
-    magma_dsetmatrix( M, N, h_A, lda, d_A, ldda ); \
+	magma_dsetmatrix( M, N, h_A, lda, d_A, ldda ); \
 \
 	magma_int_t nb   = magma_get_##MAGMAPREFIX##geqrf_nb( lda ); \
 	magma_int_t size = (2*min(M, N) + (N+31)/32*32 )*nb; \
 	magma_dmalloc( &d_T, size ); \
 \
-    magma_##MAGMAPREFIX##geqrf_gpu( M, N, d_A, ldda, h_tau, d_T, &info); \
+	magma_##MAGMAPREFIX##geqrf_gpu( M, N, d_A, ldda, h_tau, d_T, &info); \
 	hCoeffs.adjointInPlace(); \
 \
 }
