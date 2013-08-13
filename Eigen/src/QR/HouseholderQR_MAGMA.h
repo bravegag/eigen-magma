@@ -25,9 +25,9 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  ********************************************************************************
- *   Content : Eigen bindings to Intel(R) MAGMA
+ *   Content : Eigen bindings to MAGMA
  *    Householder QR decomposition of a matrix w/o pivoting based on
- *    LAPACKE_?geqrf function.
+ *    magma_?geqrf_gpu function.
  ********************************************************************************
 */
 
@@ -36,7 +36,7 @@
 
 #include "Eigen/src/Core/util/MAGMA_support.h"
 
-namespace Eigen { 
+namespace Eigen {
 
 namespace internal {
 
@@ -48,19 +48,29 @@ void householder_qr_inplace_blocked(MatrixQR& mat, HCoeffs& hCoeffs, \
                                        typename MatrixQR::Index maxBlockSize=32, \
                                        EIGTYPE* tempData = 0) \
 { \
-  lapack_int m = mat.rows(); \
-  lapack_int n = mat.cols(); \
-  lapack_int lda = mat.outerStride(); \
-  lapack_int matrix_order = (MatrixQR::IsRowMajor) ? LAPACK_ROW_MAJOR : LAPACK_COL_MAJOR; \
-  LAPACKE_##MAGMAPREFIX##geqrf( matrix_order, m, n, (MAGMATYPE*)mat.data(), lda, (MAGMATYPE*)hCoeffs.data()); \
-  hCoeffs.adjointInPlace(); \
+	MAGMATYPE *h_A = (MAGMATYPE*)mat.data(), *h_tau = (MAGMATYPE*)hCoeffs.data(); \
+	MAGMATYPE *d_A, *d_T; \
+	magma_int_t info; \
+	magma_int_t M 	 = mat.rows(); \
+	magma_int_t N 	 = mat.cols(); \
+	magma_int_t lda  = mat.outerStride(); \
+	magma_int_t ldda = ((lda+31)/32)*32; \
+	MAGMA_DEVALLOC(  d_A, MAGMATYPE, ldda*N ); \
+    magma_dsetmatrix( M, N, h_A, lda, d_A, ldda ); \
+\
+	magma_int_t nb   = magma_get_##MAGMAPREFIX##geqrf_nb( lda ); \
+	magma_int_t size = (2*min(M, N) + (N+31)/32*32 )*nb; \
+	magma_dmalloc( &d_T, size ); \
+\
+    magma_##MAGMAPREFIX##geqrf_gpu( M, N, d_A, ldda, h_tau, d_T, &info); \
+	hCoeffs.adjointInPlace(); \
 \
 }
 
-EIGEN_MAGMA_QR_NOPIV(double, double, d)
-EIGEN_MAGMA_QR_NOPIV(float, float, s)
-EIGEN_MAGMA_QR_NOPIV(dcomplex, magmaDoubleComplex, z)
-EIGEN_MAGMA_QR_NOPIV(scomplex, magmaFloatComplex, c)
+EIGEN_MAGMA_QR_NOPIV(double,		double,				d)
+EIGEN_MAGMA_QR_NOPIV(float,		float,				s)
+EIGEN_MAGMA_QR_NOPIV(dcomplex,	magmaDoubleComplex,	z)
+EIGEN_MAGMA_QR_NOPIV(scomplex,	magmaFloatComplex,	c)
 
 } // end namespace internal
 
