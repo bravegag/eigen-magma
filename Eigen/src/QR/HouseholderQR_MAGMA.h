@@ -64,6 +64,7 @@ void householder_qr_inplace_blocked(MatrixQR& mat, HCoeffs& hCoeffs, \
 \
 	magma_##MAGMAPREFIX##geqrf_gpu( M, N, d_A, ldda, h_tau, d_T, &info); \
 	hCoeffs.adjointInPlace(); \
+	MAGMA_DEVFREE(  d_A ); \
 \
 }
 
