@@ -50,21 +50,34 @@ void householder_qr_inplace_blocked(MatrixQR& mat, HCoeffs& hCoeffs, \
 { \
 	MAGMATYPE *h_A = (MAGMATYPE*)mat.data(), *h_tau = (MAGMATYPE*)hCoeffs.data(); \
 	MAGMATYPE *d_A, *d_T; \
+	MAGMATYPE *h_work; \
 	magma_int_t info; \
 	magma_int_t M 	 = mat.rows(); \
 	magma_int_t N 	 = mat.cols(); \
 	magma_int_t lda  = mat.outerStride(); \
+	magma_int_t nb   = magma_get_##MAGMAPREFIX##geqrf_nb( lda ); \
+	/* MAGMATYPE tmp[1]; */ \
+\
+	/* magma_int_t lwork = -1; */ \
+	/* lapackf77_##MAGMAPREFIX##geqrf(&M, &N, h_A, &lda, h_tau, tmp, &lwork, &info); */ \
+	/* lwork = (magma_int_t)MAGMA_D_REAL(tmp[0]); */ \
+	/* lwork = max(lwork, max(N*nb, 2*nb*nb)); */ \
+	/* MAGMA_MALLOC( h_work, MAGMATYPE, lwork ); */ \
+\
 	magma_int_t ldda = ((lda+31)/32)*32; \
 	MAGMA_DEVALLOC(  d_A, MAGMATYPE, ldda*N ); \
 	magma_dsetmatrix( M, N, h_A, lda, d_A, ldda ); \
 \
-	magma_int_t nb   = magma_get_##MAGMAPREFIX##geqrf_nb( lda ); \
-	magma_int_t size = (2*min(M, N) + (N+31)/32*32 )*nb; \
+	magma_int_t size = (2*min(M, N) + (N+31)/32)*nb; \
 	magma_dmalloc( &d_T, size ); \
 \
-	magma_##MAGMAPREFIX##geqrf_gpu( M, N, d_A, ldda, h_tau, d_T, &info); \
+	/* magma_##MAGMAPREFIX##geqrf( M, N, h_A, lda, h_tau, h_work, lwork, &info); */ \
+	magma_##MAGMAPREFIX##geqrf3_gpu( M, N, d_A, ldda, h_tau, d_T, &info); \
 	hCoeffs.adjointInPlace(); \
+\	
+	magma_free(  d_T ); \
 	MAGMA_DEVFREE(  d_A ); \
+	/* MAGMA_FREE( h_work ); */ \
 \
 }
 
