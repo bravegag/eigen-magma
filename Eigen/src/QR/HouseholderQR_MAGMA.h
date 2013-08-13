@@ -67,8 +67,8 @@ void householder_qr_inplace_blocked(MatrixQR& mat, HCoeffs& hCoeffs, \
 \
 }
 
-EIGEN_MAGMA_QR_NOPIV(double,		double,				d)
-EIGEN_MAGMA_QR_NOPIV(float,		float,				s)
+EIGEN_MAGMA_QR_NOPIV(double,	double,			d)
+EIGEN_MAGMA_QR_NOPIV(float,	float,			s)
 EIGEN_MAGMA_QR_NOPIV(dcomplex,	magmaDoubleComplex,	z)
 EIGEN_MAGMA_QR_NOPIV(scomplex,	magmaFloatComplex,	c)
 
