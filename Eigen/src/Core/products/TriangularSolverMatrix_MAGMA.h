@@ -108,7 +108,7 @@ struct triangular_solve_matrix<EIGTYPE,Index,OnTheLeft,Mode,Conjugate,TriStorage
    magma_dsetmatrix( M, N, h_B, ldb, d_B, lddb ); \
 \
 /* call ?trsm*/ \
-   magmablas_##MAGMAPREFIX##trsm( side, uplo, transA, diag, M, N, alpha, d_A, ldda, d_B, lddb ); \
+   cublas##MAGMAPREFIX##trsm( side, uplo, transA, diag, M, N, alpha, d_A, ldda, d_B, lddb ); \
 \
    magma_dgetmatrix( M, N, d_B, lddb, h_B, ldb ); \
 \
@@ -117,10 +117,10 @@ struct triangular_solve_matrix<EIGTYPE,Index,OnTheLeft,Mode,Conjugate,TriStorage
  } \
 };
 
-EIGEN_MAGMA_TRSM_L(double,	double,			d)
-EIGEN_MAGMA_TRSM_L(dcomplex, 	magmaDoubleComplex,	z)
-EIGEN_MAGMA_TRSM_L(float,	float,			s)
-EIGEN_MAGMA_TRSM_L(scomplex, 	magmaFloatComplex,	c)
+EIGEN_MAGMA_TRSM_L(double,	double,			D)
+EIGEN_MAGMA_TRSM_L(dcomplex, 	magmaDoubleComplex,	Z)
+EIGEN_MAGMA_TRSM_L(float,	float,			S)
+EIGEN_MAGMA_TRSM_L(scomplex, 	magmaFloatComplex,	C)
 
 
 // implements RightSide general * op(triangular)^-1
@@ -194,7 +194,7 @@ struct triangular_solve_matrix<EIGTYPE,Index,OnTheRight,Mode,Conjugate,TriStorag
    magma_dsetmatrix( M, N, h_B, ldb, d_B, lddb ); \
 \
    /* call ?trsm*/ \
-   magmablas_##MAGMAPREFIX##trsm( side, uplo, transA, diag, M, N, alpha, d_A, ldda, d_B, lddb ); \
+   cublas##MAGMAPREFIX##trsm( side, uplo, transA, diag, M, N, alpha, d_A, ldda, d_B, lddb ); \
 \
    magma_dgetmatrix( M, N, d_B, lddb, h_B, ldb ); \
 \
@@ -203,10 +203,10 @@ struct triangular_solve_matrix<EIGTYPE,Index,OnTheRight,Mode,Conjugate,TriStorag
   } \
 };
 
-EIGEN_MAGMA_TRSM_R(double, 	 double,				d)
-EIGEN_MAGMA_TRSM_R(dcomplex, magmaDoubleComplex,	z)
-EIGEN_MAGMA_TRSM_R(float, 	 float,				s)
-EIGEN_MAGMA_TRSM_R(scomplex, magmaFloatComplex,	c)
+EIGEN_MAGMA_TRSM_R(double,	double,			D)
+EIGEN_MAGMA_TRSM_R(dcomplex,	magmaDoubleComplex,	Z)
+EIGEN_MAGMA_TRSM_R(float,	float,			S)
+EIGEN_MAGMA_TRSM_R(scomplex,	magmaFloatComplex,	C)
 
 
 } // end namespace internal
