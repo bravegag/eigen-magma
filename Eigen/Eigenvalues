@@ -36,16 +36,10 @@
 #include "src/Eigenvalues/RealQZ.h"
 #include "src/Eigenvalues/GeneralizedEigenSolver.h"
 #include "src/Eigenvalues/MatrixBaseEigenvalues.h"
-#ifdef EIGEN_USE_LAPACKE
+#if defined(EIGEN_USE_LAPACKE) || defined(EIGEN_USE_MAGMA_AND_MKL)
 #include "src/Eigenvalues/RealSchur_MKL.h"
 #include "src/Eigenvalues/ComplexSchur_MKL.h"
 #include "src/Eigenvalues/SelfAdjointEigenSolver_MKL.h"
-#endif
-// TODO: implement 
-#ifdef EIGEN_USE_MAGMA
-//#include "src/Eigenvalues/RealSchur_MAGMA.h"
-//#include "src/Eigenvalues/ComplexSchur_MAGMA.h"
-//#include "src/Eigenvalues/SelfAdjointEigenSolver_MAGMA.h"
 #endif
 
 #include "src/Core/util/ReenableStupidWarnings.h"

@@ -45,6 +45,12 @@
   #endif
 #endif
 
+#ifdef EIGEN_USE_MAGMA_AND_MKL
+  #ifndef EIGEN_USE_MKL_VML
+    #define EIGEN_USE_MKL_VML
+  #endif
+#endif
+
 #ifdef EIGEN_USE_LAPACKE_STRICT
   #define EIGEN_USE_LAPACKE
 #endif
@@ -53,7 +59,7 @@
   #define EIGEN_USE_MKL
 #endif
 
-#if defined EIGEN_USE_MKL
+#if defined(EIGEN_USE_MKL) || defined(EIGEN_USE_MAGMA_AND_MKL)
 
 #include <mkl.h>
 #include <mkl_lapacke.h>

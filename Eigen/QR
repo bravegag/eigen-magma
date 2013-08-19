@@ -31,8 +31,10 @@
 #include "src/QR/ColPivHouseholderQR_MKL.h"
 #endif
 #ifdef EIGEN_USE_MAGMA
-#include "src/QR/HouseholderQR_MAGMA.h"
 #include "src/QR/ColPivHouseholderQR_MAGMA.h"
+#ifdef EIGEN_USE_MAGMA_AND_MKL
+#include "src/QR/HouseholderQR_MKL.h"
+#endif
 #endif
 
 #ifdef EIGEN2_SUPPORT

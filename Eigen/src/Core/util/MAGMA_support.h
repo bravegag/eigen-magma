@@ -37,9 +37,6 @@
   #ifndef EIGEN_USE_CUBLAS
     #define EIGEN_USE_CUBLAS
   #endif
-  #ifndef EIGEN_USE_MAGMA_VML
-    #define EIGEN_USE_MAGMA_VML
-  #endif
 #endif
 
 #if defined(EIGEN_USE_CUBLAS) || defined(EIGEN_USE_MAGMA_VML)
@@ -52,7 +49,7 @@
 #include <cuda_runtime_api.h>
 #include <cublas.h>
 #include <magma.h>
-#include <magma_lapack.h>
+//#include <magma_lapack.h>
 
 #define EIGEN_MAGMA_VML_THRESHOLD 128
 
