@@ -111,6 +111,16 @@
         exit(-1);                                                             \
     }
 
+#define MAGMA_HOSTREALLOC( result, ptr, new_size, old_size )								\
+		if ( cudaSuccess != cudaMallocHost(result, new_size)) {							\
+			result = 0;																	\
+		}																				\
+		if ( cudaSuccess != cudaMemcpy(result, ptr, old_size, cudaMemcpyHostToHost) {	\
+			result = 0;																	\
+		}																				\
+		if ( cudaSuccess != cudaFreeHost(ptr)) {											\
+			result = 0;																	\
+		}																				\
 
 #define MAGMA_DEVALLOC( ptr, type, size )                                \
     if ( MAGMA_SUCCESS !=                                                \

@@ -132,7 +132,7 @@ inline void* handmade_aligned_realloc(void* ptr, std::size_t size, std::size_t =
   void *previous_aligned = static_cast<char *>(original)+previous_offset;
   if(aligned!=previous_aligned)
     std::memmove(aligned, previous_aligned, size);
-  
+
   *(reinterpret_cast<void**>(aligned) - 1) = original;
   return aligned;
 }
@@ -201,7 +201,7 @@ inline void check_that_malloc_is_allowed()
 {
   eigen_assert(is_malloc_allowed() && "heap allocation is forbidden (EIGEN_RUNTIME_NO_MALLOC is defined and g_is_malloc_allowed is false)");
 }
-#else 
+#else
 inline void check_that_malloc_is_allowed()
 {}
 #endif
@@ -214,7 +214,9 @@ inline void* aligned_malloc(size_t size)
   check_that_malloc_is_allowed();
 
   void *result;
-  #if !EIGEN_ALIGN
+  #if defined(EIGEN_USE_MAGMA)
+    MAGMA_HOSTALLOC(result, byte, size);
+  #elif !EIGEN_ALIGN
     result = std::malloc(size);
   #elif EIGEN_MALLOC_ALREADY_ALIGNED
     result = std::malloc(size);
@@ -237,7 +239,9 @@ inline void* aligned_malloc(size_t size)
 /** \internal Frees memory allocated with aligned_malloc. */
 inline void aligned_free(void *ptr)
 {
-  #if !EIGEN_ALIGN
+  #if defined(EIGEN_USE_MAGMA)
+    MAGMA_HOSTFREE(ptr);
+  #elif !EIGEN_ALIGN
     std::free(ptr);
   #elif EIGEN_MALLOC_ALREADY_ALIGNED
     std::free(ptr);
@@ -262,7 +266,9 @@ inline void* aligned_realloc(void *ptr, size_t new_size, size_t old_size)
   EIGEN_UNUSED_VARIABLE(old_size);
 
   void *result;
-#if !EIGEN_ALIGN
+#if defined(EIGEN_USE_MAGMA)
+  MAGMA_HOSTREALLOC(result, ptr, new_size, old_size);
+#elif !EIGEN_ALIGN
   result = std::realloc(ptr,new_size);
 #elif EIGEN_MALLOC_ALREADY_ALIGNED
   result = std::realloc(ptr,new_size);
@@ -488,8 +494,8 @@ static inline Index first_aligned(const Scalar* array, Index size)
 }
 
 /** \internal Returns the smallest integer multiple of \a base and greater or equal to \a size
-  */ 
-template<typename Index> 
+  */
+template<typename Index>
 inline static Index first_multiple(Index size, Index base)
 {
   return ((size+base-1)/base)*base;
@@ -598,7 +604,7 @@ template<typename T> class aligned_stack_memory_handler
     Eigen::internal::check_size_for_overflow<TYPE>(SIZE); \
     TYPE* NAME = (BUFFER)!=0 ? BUFFER : reinterpret_cast<TYPE*>(Eigen::internal::aligned_malloc(sizeof(TYPE)*SIZE));    \
     Eigen::internal::aligned_stack_memory_handler<TYPE> EIGEN_CAT(NAME,_stack_memory_destructor)((BUFFER)==0 ? NAME : 0,SIZE,true)
-    
+
 #endif
 
 
@@ -659,7 +665,7 @@ template<typename T> class aligned_stack_memory_handler
 * Example:
 * \code
 * // Matrix4f requires 16 bytes alignment:
-* std::map< int, Matrix4f, std::less<int>, 
+* std::map< int, Matrix4f, std::less<int>,
 *           aligned_allocator<std::pair<const int, Matrix4f> > > my_map_mat4;
 * // Vector3f does not require 16 bytes alignment, no need to use Eigen's allocator:
 * std::map< int, Vector3f > my_map_vec3;
