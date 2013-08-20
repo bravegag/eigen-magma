@@ -215,7 +215,7 @@ inline void* aligned_malloc(size_t size)
 
   void *result;
   #if defined(EIGEN_USE_MAGMA)
-    MAGMA_HOSTALLOC(result, byte, size);
+    MAGMA_HOSTALLOC(result, char, size);
   #elif !EIGEN_ALIGN
     result = std::malloc(size);
   #elif EIGEN_MALLOC_ALREADY_ALIGNED
