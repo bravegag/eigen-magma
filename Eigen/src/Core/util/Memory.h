@@ -19,6 +19,8 @@
 #ifndef EIGEN_MEMORY_H
 #define EIGEN_MEMORY_H
 
+#include <stdio.h>
+
 #ifndef EIGEN_MALLOC_ALREADY_ALIGNED
 
 // Try to determine automatically if malloc is already aligned.
