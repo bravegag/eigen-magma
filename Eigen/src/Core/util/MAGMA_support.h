@@ -44,7 +44,7 @@
   #define HAVE_CUBLAS 1
 #endif
 
-#if defined EIGEN_USE_MAGMA
+#if defined(EIGEN_USE_MAGMA)
 
 #include <cuda_runtime_api.h>
 #include <cublas.h>
