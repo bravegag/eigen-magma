@@ -141,7 +141,7 @@ struct triangular_solve_matrix<EIGTYPE,Index,OnTheRight,Mode,Conjugate,TriStorag
   { \
    magma_int_t M = otherSize, N = size, lda, ldb; \
    magma_side_t side = MagmaRight; \
-   magma_int_t lda, ldb, ldda, lddb. Ak; \
+   magma_int_t ldda, lddb, Ak; \
    const MAGMATYPE *h_A; \
    MAGMATYPE *h_B, *d_A, *d_B; \
 \
@@ -173,11 +173,11 @@ struct triangular_solve_matrix<EIGTYPE,Index,OnTheRight,Mode,Conjugate,TriStorag
    magma_diag_t diag = (IsUnitDiag) ? 'U' : 'N'; \
 \
    if ( side == MagmaLeft ) { \
-	 lda = M; \
-   	 Ak = M; \
+	lda = M; \
+	Ak = M; \
    } else { \
-     lda = N; \
-   	 Ak = N; \
+	lda = N; \
+	Ak = N; \
    } \
    ldb = M; \
 \
